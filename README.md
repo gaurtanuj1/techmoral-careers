@@ -2,6 +2,27 @@
 
 A complete, locally runnable careers prototype with a responsive HTML/CSS frontend, Python Flask backend, SQLite application storage and private PDF resume uploads. No Node.js, Azure account, database server or paid service is needed to test it locally.
 
+## Upgrade an existing local copy (login version)
+
+1. Stop the app with Ctrl+C.
+2. Back up your existing `instance` folder.
+3. Extract this updated ZIP into a temporary folder. Copy its source files over the matching files in your existing `techmoral-careers` folder. Keep your existing `instance` and `.venv` folders; neither is included in the ZIP.
+4. Start again with `.\.venv\Scripts\python.exe app.py`.
+5. Open `/register`, create a test account and log in. Open My account to see new applications submitted while logged in.
+
+Startup adds the users table and an optional account ID to the existing database. Old applications and resumes remain available through the operator CSV export. Old records are not automatically linked to a new account by email: email ownership is not verified in this prototype.
+
+## Account creation and login
+
+- Public home and company pages; job search, job details, applications and My account require login.
+- Signup: name, email, 12–128 character password, confirmation and privacy consent.
+- Email matching is case-insensitive. Unique emails prevent duplicate accounts.
+- Salted scrypt password hashes; readable passwords are never stored.
+- CSRF-protected login, registration and POST-only logout, with an eight-hour session.
+- Basic persistent throttle: at most five login attempts per email in a rolling 15-minute window, including successful logins. This is a simple local control; deploy perimeter rate limiting for public traffic as well.
+- My account lists only that user's new application references. Received indicates storage, not recruitment progress.
+- No email verification, password reset, MFA or admin/recruiter login is connected. Use test credentials locally; decide on these account lifecycle features before public recruitment.
+
 ## 1. Run on your Windows machine
 
 Install Python 3.12 or newer from https://www.python.org/downloads/windows/ (include the Python launcher), extract this ZIP, and open PowerShell inside the `techmoral-careers` folder containing `app.py`.
@@ -22,14 +43,15 @@ Open **http://127.0.0.1:5000**. Keep the terminal open; Ctrl+C stops it. Alterna
 - About, life at techMoral, hiring process, FAQs, contact and draft privacy pages.
 - Application form with CSRF protection, server-side validation, required consent and PDF upload (up to 5 MB).
 - Confirmation reference, persisted applications, private upload directory and local CSV export.
+- Candidate registration, login, logout and private My account submissions list.
 - Responsive styles, keyboard focus indicators and form labels; no external fonts or JavaScript required.
 - Health endpoint: `/health`.
 
-The sample JDs were rewritten from public role descriptions; they are not copied employer ads. Experience ranges, employment type and company prose are illustrative. Locations, work arrangements, contact details and benefits are not invented. There is no email integration, recruiter login, applicant tracking or public admin dashboard.
+The sample JDs were rewritten from public role descriptions; they are not copied employer ads. Experience ranges, employment type and company prose are illustrative. Locations, work arrangements, contact details and benefits are not invented. There is no email integration, recruiter login, hiring-stage tracking or public admin dashboard. Candidate signup, login and a private submissions page are included.
 
 ## 3. Try the full application flow
 
-1. Open Find a job; search `Azure`, `C#` or `669725`.
+1. Create an account, log in, then open Find a job; search `Azure`, `C#` or `669725`.
 2. Open a role, then Apply for this role.
 3. Use fictional applicant details and a small PDF; submit the form.
 4. Save the displayed reference. Restart the app: the record remains in SQLite.
@@ -96,7 +118,7 @@ For an initial VM lab, use Windows Task Scheduler:
 
 ### D. Before collecting real applicants
 
-Approve real company details, JDs, privacy notice, retention/deletion process and contact information. Add upload malware scanning, submission rate limits at the edge, recruiter authentication if a dashboard is added, operational monitoring and protected backups. SQLite is suitable for a small single-VM prototype; use a managed database and appropriate file storage if concurrency or multiple app servers grow. Back up database and resumes consistently while writes are paused; exclude applicant data and secrets from source control and public downloads. The VM deployment has not been executed in your Azure account.
+Approve real company details, JDs, privacy notice, retention/deletion process and contact information. Add email verification and password recovery, upload malware scanning, login/signup/submission rate limits at the edge, recruiter authentication if a dashboard is added, operational monitoring and protected backups. SQLite is suitable for a small single-VM prototype; use a managed database and appropriate file storage if concurrency or multiple app servers grow. Back up database and resumes consistently while writes are paused; exclude applicant data and secrets from source control and public downloads. The VM deployment has not been executed in your Azure account.
 
 ## 5. Edit the content
 
@@ -117,3 +139,7 @@ Reviewed 7 October 2026. Role drafts deliberately simplify these descriptions; r
 - Senior .NET role: https://maersk.wd3.myworkdayjobs.com/en-US/Maersk_Careers/job/Senior-Software-Engineer_R184221
 - Flask/Waitress Windows hosting: https://flask.palletsprojects.com/en/stable/deploying/waitress/
 - IIS reverse proxy: https://learn.microsoft.com/en-us/iis/extensions/url-rewrite-module/reverse-proxy-with-url-rewrite-v2-and-application-request-routing
+
+Authentication implementation references:
+- https://werkzeug.palletsprojects.com/en/stable/utils/#werkzeug.security.generate_password_hash
+- https://flask.palletsprojects.com/en/stable/web-security/
